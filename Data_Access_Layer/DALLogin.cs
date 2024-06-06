@@ -235,5 +235,140 @@ namespace Data_Access_Layer
             }
             return userObj;
         }
+        public User LoginUserDetailById(int userId)
+        {
+            try
+            {
+                User user = new User();
+                // Retrieve the user by ID
+                user = _cIDbContext.User.FirstOrDefault(u => u.Id == userId && !u.IsDeleted);
+
+                if (user != null)
+                {
+                    return user;
+                }
+                else
+                {
+                    throw new Exception("User not found.");
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public UserDetail GetUserProfileDetailById(int userId)
+        {
+            try
+            {
+                var userDetails = (from u in _cIDbContext.User
+                                   join ud in _cIDbContext.UserDetail on u.Id equals ud.UserId into UserDetailGroup
+                                   from userdetail in UserDetailGroup.DefaultIfEmpty()
+                                   where !u.IsDeleted && !userdetail.IsDeleted && u.UserType == "user" && userdetail.UserId == userId
+                                   select new UserDetail
+                                   {
+                                       Id = u.Id,
+                                       FirstName = u.FirstName,
+                                       LastName = u.LastName,
+                                       PhoneNumber = u.PhoneNumber,
+                                       EmailAddress = u.EmailAddress,
+                                       UserType = u.UserType,
+                                       UserId = userdetail.Id,
+                                       Name = userdetail.Name,
+                                       Surname = userdetail.Surname,
+                                       EmployeeId = userdetail.EmployeeId,
+                                       Department = userdetail.Department,
+                                       Title = userdetail.Title,
+                                       Manager = userdetail.Manager,
+                                       WhyIVolunteer = userdetail.WhyIVolunteer,
+                                       CountryId = userdetail.CountryId,
+                                       CityId = userdetail.CityId,
+                                       Avilability = userdetail.Avilability,
+                                       LinkdInUrl = userdetail.LinkdInUrl,
+                                       MySkills = userdetail.MySkills,
+                                       UserImage = userdetail.UserImage,
+                                       Status = userdetail.Status,
+                                   }).ToList().FirstOrDefault();
+
+                return userDetails;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public string LoginUserProfileUpdate(UserDetail userDetail)
+        {
+            string result = "";
+            try
+            {
+                // Begin transaction
+                using (var transaction = _cIDbContext.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        // Get the userdetails
+                        var existingUserDetail = _cIDbContext.UserDetail
+                            .FirstOrDefault(u => u.UserId == userDetail.UserId && u.IsDeleted == false);
+
+                        if (existingUserDetail != null)
+                        {
+                            // Update user detail
+                            existingUserDetail.Name=userDetail.Name;
+                            existingUserDetail.Surname=userDetail.Surname;  
+                            existingUserDetail.EmployeeId=userDetail.EmployeeId;    
+                            existingUserDetail.Manager=userDetail.Manager;
+                            existingUserDetail.Title=userDetail.Title;
+                            existingUserDetail.Department=userDetail.Department;
+                            existingUserDetail.MyProfile=userDetail.MyProfile;
+                            existingUserDetail.WhyIVolunteer=userDetail.WhyIVolunteer; 
+                            existingUserDetail.CountryId=userDetail.CountryId;
+                            existingUserDetail.CityId=userDetail.CityId;
+                            existingUserDetail.Avilability=userDetail.Avilability;
+                            existingUserDetail.LinkdInUrl=userDetail.LinkdInUrl;
+                            existingUserDetail.MySkills=userDetail.MySkills;
+                            existingUserDetail.UserImage=userDetail.UserImage;
+
+
+                            result = "User Detail Updated Successfully!";
+                        }
+                        else
+                        {
+                            //Insert new user detail
+                            existingUserDetail = userDetail;
+                            result = "User Detail Created Successfully!";
+                        }
+
+                        //Update First Name and Last Name in User Table
+                        var user = _cIDbContext.User
+                            .FirstOrDefault(u => u.Id == userDetail.UserId && u.IsDeleted == false);
+                        if (user != null)
+                        {
+                            //Update First and Last Name
+                            user.FirstName = userDetail.Name;
+                            user.LastName = userDetail.Surname;
+                        }
+
+                        _cIDbContext.SaveChanges();
+
+                        // Commit transaction
+                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Rollback transaction if an exception occurs
+                        transaction.Rollback();
+                        throw ex;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            return result;
+        }
     }
 }

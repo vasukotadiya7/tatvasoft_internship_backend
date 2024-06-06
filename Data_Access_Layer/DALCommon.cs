@@ -78,5 +78,19 @@ namespace Data_Access_Layer
                 .Select(m => new DropDown { Value = m.Id, Text = m.MissionTitle })
                 .ToListAsync();
         }
+        public List<DropDown> GetUserSkill(int userId)
+        {
+            List<DropDown> missionSkill = new List<DropDown>();
+            try
+            {
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            return missionSkill;
+        }
     }
 }

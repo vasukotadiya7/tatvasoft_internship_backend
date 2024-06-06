@@ -35,6 +35,8 @@ namespace Data_Access_Layer.Repository.Entities
         public string? UserFullName { get; set; }
     }
 
+    
+
     public class UserDetail : BaseEntity
     {
         [Key]        

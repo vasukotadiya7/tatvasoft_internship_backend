@@ -49,6 +49,7 @@ namespace Data_Access_Layer
             mission.MissionOrganisationDetail = "";
             mission.MissionApplyStatus = "";
             mission.MissionApproveStatus = "";
+            mission.RegistrationDeadLine=mission.StartDate.ToUniversalTime();   
             mission.MissionAvilability = "";
             mission.MissionDateStatus = "";
             mission.MissionDeadLineStatus = "";
@@ -119,7 +120,7 @@ namespace Data_Access_Layer
                         missionToUpdate.EndDate = mission.EndDate;
                         missionToUpdate.MissionType = mission.MissionType;
                         missionToUpdate.TotalSheets = mission.TotalSheets;
-                        missionToUpdate.RegistrationDeadLine = mission.RegistrationDeadLine;
+                        missionToUpdate.RegistrationDeadLine = mission.StartDate;
                         missionToUpdate.MissionThemeId = mission.MissionThemeId;
                         missionToUpdate.MissionSkillId = mission.MissionSkillId;
                         missionToUpdate.MissionImages = mission.MissionImages;
@@ -215,7 +216,7 @@ namespace Data_Access_Layer
                         MissionThemeName = m.MissionThemeName,
                         MissionSkillName = string.Join(",", m.MissionSkillName),
                         MissionStatus = m.RegistrationDeadLine < DateTime.Now.AddDays(-1) ? "Closed" : "Available",
-                        MissionApplyStatus = _cIDbContext.MissionApplication.Any(ma => ma.MissionId == m.Id && ma.UserId == userid) ? "Applied" : "Apply",
+                        MissionApplyStatus = _cIDbContext.MissionApplication.Any(ma => ma.MissionId == m.Id && ma.UserId == userid && !ma.IsDeleted) ? "Applied" : "Apply",
                         MissionApproveStatus = _cIDbContext.MissionApplication.Any(ma => ma.MissionId == m.Id && ma.UserId == userid && ma.Status == true) ? "Approved" : "Applied",
                         MissionDateStatus = m.EndDate <= DateTime.Now.AddDays(-1) ? "MissionEnd" : "MissionRunning",
                         MissionDeadLineStatus = m.RegistrationDeadLine <= DateTime.Now.AddDays(-1) ? "Closed" : "Running",
@@ -341,9 +342,11 @@ namespace Data_Access_Layer
             try
             {
                 var missionApplication = _cIDbContext.MissionApplication.FirstOrDefault(m => m.Id == id);
+                var mission = _cIDbContext.Missions.FirstOrDefault(m => m.Id == missionApplication.MissionId);
                 if (missionApplication != null)
                 {
                     missionApplication.IsDeleted = true;
+                    mission.TotalSheets += 1;
                     _cIDbContext.SaveChanges();
                     return "Success";
                 }
