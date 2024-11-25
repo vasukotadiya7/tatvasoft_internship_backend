@@ -1,6 +1,7 @@
 ﻿using Data_Access_Layer;
 using Data_Access_Layer.JWTService;
 using Data_Access_Layer.Repository.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Business_logic_Layer
@@ -9,11 +10,13 @@ namespace Business_logic_Layer
     {
         private readonly DALLogin _dalLogin;
         private readonly JwtService _jwtService;
+        private readonly PasswordHasher<string> _passwordHasher;
         ResponseResult result = new ResponseResult();
         public BALLogin(DALLogin dalLogin, JwtService jwtService)
         {
             _dalLogin = dalLogin;
             _jwtService = jwtService;
+            _passwordHasher = new PasswordHasher<string>();
         }
 
         public string Register(User user)

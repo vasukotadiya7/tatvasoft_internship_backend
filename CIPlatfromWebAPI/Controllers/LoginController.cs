@@ -1,6 +1,7 @@
 ﻿using Business_logic_Layer;
 using Data_Access_Layer.Repository.Entities;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Web_API.Controllers
