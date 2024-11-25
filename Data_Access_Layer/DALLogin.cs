@@ -1,5 +1,6 @@
 ﻿using Data_Access_Layer.Repository;
 using Data_Access_Layer.Repository.Entities;
+using Microsoft.AspNetCore.Identity;
 using System.Data;
 
 namespace Data_Access_Layer
@@ -7,9 +8,11 @@ namespace Data_Access_Layer
     public class DALLogin
     {
         private readonly AppDbContext _cIDbContext;
+        private readonly PasswordHasher<string> _passwordHasher; 
         public DALLogin(AppDbContext cIDbContext)
         {
             _cIDbContext = cIDbContext;
+            _passwordHasher = new PasswordHasher<string>();
         }
 
         public User GetUserById(int userId)
@@ -85,6 +88,7 @@ namespace Data_Access_Layer
                     int newEmployeeId = maxEmployeeId + 1;
 
                     // Create a new user entity
+                    string hashedPassword = _passwordHasher.HashPassword(null, user.Password);
                     var newUser = new User
                     {
                         Id = userID,
@@ -92,7 +96,7 @@ namespace Data_Access_Layer
                         LastName = user.LastName,
                         PhoneNumber = user.PhoneNumber,
                         EmailAddress = user.EmailAddress,
-                        Password = user.Password,
+                        Password = hashedPassword,
                         UserType = user.UserType,
                         CreatedDate = DateTime.Now.ToUniversalTime(),
                         IsDeleted = false
@@ -208,9 +212,13 @@ namespace Data_Access_Layer
 
                     if (userData != null)
                     {
-                        if (userData.Password == user.Password)
-                        {
-                            userObj.Id = userData.Id;
+                    //string hashedPassword = _passwordHasher.HashPassword(null, user.Password);
+                    //if (userData.Password == user.Password)
+                    var result = _passwordHasher.VerifyHashedPassword(null, userData.Password, user.Password);
+                    if (result == PasswordVerificationResult.Success)
+
+                    {
+                        userObj.Id = userData.Id;
                             userObj.FirstName = userData.FirstName;
                             userObj.LastName = userData.LastName;
                             userObj.PhoneNumber = userData.PhoneNumber;
